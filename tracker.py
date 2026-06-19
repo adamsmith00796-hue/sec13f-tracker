@@ -18,6 +18,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from bs4 import BeautifulSoup
 from collections import defaultdict
+import yfinance as yf
 
 # ─────────────────────────────────────────────
 # CONFIGURATION — edit this section
@@ -181,6 +182,37 @@ def fetch_13f_holdings(meta: dict) -> list[dict]:
 
     return holdings
 
+# ─────────────────────────────────────────────
+# PRICE LOOKUP — Buy Up To prices via yfinance
+# ─────────────────────────────────────────────
+_price_cache = {}
+
+def get_buy_up_to(stock_name: str) -> str:
+    """Fetch current market price via yfinance and return a buy-up-to price."""
+    if stock_name in _price_cache:
+        return _price_cache[stock_name]
+    try:
+        results = yf.Search(stock_name, max_results=1)
+        quotes = results.quotes
+        if not quotes:
+            _price_cache[stock_name] = "N/A"
+            return "N/A"
+        sym = quotes[0].get("symbol", "")
+        if not sym:
+            _price_cache[stock_name] = "N/A"
+            return "N/A"
+        tkr = yf.Ticker(sym)
+        price = getattr(tkr.fast_info, "last_price", None)
+        if price and price > 0:
+            result = f"${round(price * 1.05, 2):,.2f}"
+        else:
+            result = "N/A"
+        _price_cache[stock_name] = result
+        return result
+    except Exception:
+        _price_cache[stock_name] = "N/A"
+        return "N/A"
+
 
 # ─────────────────────────────────────────────
 # ANALYTICS
@@ -306,6 +338,7 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
             <tr>
                 <td style="padding:4px 8px;font-size:13px;">{h['name']}{flag}</td>
                 <td style="padding:4px 8px;font-size:13px;text-align:right;">{fmt_usd(h['value'])}</td>
+                <td style="padding:4px 8px;font-size:13px;text-align:right;">{get_buy_up_to(h['name'])}</td>
             </tr>"""
 
         manager_cards += f"""
@@ -375,6 +408,7 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
           <th style="padding:6px 10px;text-align:left;">Manager</th>
           <th style="padding:6px 10px;text-align:left;">Position</th>
           <th style="padding:6px 10px;text-align:left;">Value</th>
+          <th style="padding:6px 10px;text-align:right;">Buy Up To</th>
         </tr>
       </thead>
       <tbody>{mega_rows}</tbody>
