@@ -356,15 +356,15 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
         manager_cards += f"""
         <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:16px;margin-bottom:12px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <span style="font-weight:700;font-size:15px;color:#e8e8e8;">{s['name']}</span>
+                <span style="font-weight:700;font-size:15px;color:#ffffff;">{s['name']}</span>
                 <span style="color:#00d4aa;font-weight:600;">{fmt_usd(s['total'])}</span>
             </div>
-            <table style="width:100%;border-collapse:collapse;color:#c0c0c0;">
+            <table style="width:100%;border-collapse:collapse;color:#e2e2e2;">
               <thead><tr>
-                <th style="padding:4px 8px;font-size:11px;color:#808080;text-align:left;">Position</th>
-                <th style="padding:4px 8px;font-size:11px;color:#808080;text-align:right;">Value</th>
-                <th style="padding:4px 8px;font-size:11px;color:#808080;text-align:right;">Current Price</th>
-                <th style="padding:4px 8px;font-size:11px;color:#808080;text-align:right;">Buy Up To (-10%)</th>
+                <th style="padding:4px 8px;font-size:11px;color:#aaaaaa;text-align:left;">Position</th>
+                <th style="padding:4px 8px;font-size:11px;color:#aaaaaa;text-align:right;">Value</th>
+                <th style="padding:4px 8px;font-size:11px;color:#aaaaaa;text-align:right;">Current Price</th>
+                <th style="padding:4px 8px;font-size:11px;color:#aaaaaa;text-align:right;">Buy Up To (-10%)</th>
               </tr></thead>
               <tbody>{top5_rows}</tbody>
             </table>
@@ -374,7 +374,7 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
 <!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#0d0d0d;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#e8e8e8;">
+<body style="margin:0;padding:0;background:#0d0d0d;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#ffffff;">
 
 <div style="max-width:720px;margin:0 auto;padding:24px 16px;">
 
@@ -382,15 +382,15 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
   <div style="border-bottom:2px solid #00d4aa;padding-bottom:16px;margin-bottom:24px;">
     <div style="font-size:11px;letter-spacing:3px;color:#00d4aa;text-transform:uppercase;margin-bottom:6px;">Institutional Intelligence</div>
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;">SEC 13F Weekly Digest</h1>
-    <div style="color:#808080;font-size:13px;margin-top:6px;">Week of {run_date} &nbsp;·&nbsp; {len(summaries)} managers tracked</div>
+    <div style="color:#aaaaaa;font-size:13px;margin-top:6px;">Week of {run_date} &nbsp;·&nbsp; {len(summaries)} managers tracked</div>
   </div>
 
   <!-- Rankings -->
   <div style="margin-bottom:32px;">
     <h2 style="font-size:14px;letter-spacing:2px;text-transform:uppercase;color:#00d4aa;margin-bottom:12px;">Portfolio Rankings</h2>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;color:#c0c0c0;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;color:#e2e2e2;">
       <thead>
-        <tr style="color:#808080;font-size:11px;text-transform:uppercase;letter-spacing:1px;">
+        <tr style="color:#aaaaaa;font-size:11px;text-transform:uppercase;letter-spacing:1px;">
           <th style="padding:6px 10px;text-align:left;">#</th>
           <th style="padding:6px 10px;text-align:left;">Manager</th>
           <th style="padding:6px 10px;text-align:left;">Total AUM</th>
@@ -405,9 +405,9 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
   <!-- Consensus -->
   <div style="margin-bottom:32px;">
     <h2 style="font-size:14px;letter-spacing:2px;text-transform:uppercase;color:#00d4aa;margin-bottom:12px;">Consensus Holdings — Most Widely Held</h2>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;color:#c0c0c0;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;color:#e2e2e2;">
       <thead>
-        <tr style="color:#808080;font-size:11px;text-transform:uppercase;letter-spacing:1px;">
+        <tr style="color:#aaaaaa;font-size:11px;text-transform:uppercase;letter-spacing:1px;">
           <th style="padding:6px 10px;text-align:left;">#</th>
           <th style="padding:6px 10px;text-align:left;">Stock</th>
           <th style="padding:6px 10px;text-align:left;">Held By</th>
@@ -423,9 +423,9 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
   <!-- Mega Positions -->
   <div style="margin-bottom:32px;">
     <h2 style="font-size:14px;letter-spacing:2px;text-transform:uppercase;color:#00d4aa;margin-bottom:12px;">Top 10 Single Largest Positions</h2>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;color:#c0c0c0;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;color:#e2e2e2;">
       <thead>
-        <tr style="color:#808080;font-size:11px;text-transform:uppercase;letter-spacing:1px;">
+        <tr style="color:#aaaaaa;font-size:11px;text-transform:uppercase;letter-spacing:1px;">
           <th style="padding:6px 10px;text-align:left;">#</th>
           <th style="padding:6px 10px;text-align:left;">Manager</th>
           <th style="padding:6px 10px;text-align:left;">Position</th>
@@ -445,7 +445,7 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
   </div>
 
   <!-- Footer -->
-  <div style="border-top:1px solid #2a2a2a;padding-top:16px;font-size:11px;color:#505050;">
+  <div style="border-top:1px solid #2a2a2a;padding-top:16px;font-size:11px;color:#888888;">
     Generated by SEC 13F Tracker · {run_date} · Data sourced from SEC EDGAR · Not financial advice.
   </div>
 
