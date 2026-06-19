@@ -187,31 +187,35 @@ def fetch_13f_holdings(meta: dict) -> list[dict]:
 # ─────────────────────────────────────────────
 _price_cache = {}
 
-def get_buy_up_to(stock_name: str) -> str:
-    """Fetch current market price via yfinance and return a buy-up-to price."""
+def get_price_info(stock_name: str) -> dict:
+    """Fetch current price via yfinance. Returns dict: current price + 10% below target."""
     if stock_name in _price_cache:
         return _price_cache[stock_name]
+    empty = {"current": "N/A", "target": "N/A"}
     try:
         results = yf.Search(stock_name, max_results=1)
         quotes = results.quotes
         if not quotes:
-            _price_cache[stock_name] = "N/A"
-            return "N/A"
+            _price_cache[stock_name] = empty
+            return empty
         sym = quotes[0].get("symbol", "")
         if not sym:
-            _price_cache[stock_name] = "N/A"
-            return "N/A"
+            _price_cache[stock_name] = empty
+            return empty
         tkr = yf.Ticker(sym)
         price = getattr(tkr.fast_info, "last_price", None)
         if price and price > 0:
-            result = f"${round(price * 1.05, 2):,.2f}"
+            result = {
+                "current": f"${price:,.2f}",
+                "target":  f"${round(price * 0.90, 2):,.2f}",
+            }
         else:
-            result = "N/A"
+            result = empty
         _price_cache[stock_name] = result
         return result
     except Exception:
-        _price_cache[stock_name] = "N/A"
-        return "N/A"
+        _price_cache[stock_name] = empty
+        return empty
 
 
 # ─────────────────────────────────────────────
@@ -308,24 +312,30 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
     consensus_rows = ""
     for i, c in enumerate(consensus[:10], 1):
         mgr_count = len(c["managers"])
+        pinfo_c = get_price_info(c["stock"])
         consensus_rows += f"""
         <tr>
             <td style="padding:6px 10px;border-bottom:1px solid #2a2a2a;">{i}</td>
             <td style="padding:6px 10px;border-bottom:1px solid #2a2a2a;font-weight:500;">{c['stock']}</td>
             <td style="padding:6px 10px;border-bottom:1px solid #2a2a2a;">{mgr_count} managers</td>
             <td style="padding:6px 10px;border-bottom:1px solid #2a2a2a;">{fmt_usd(c['total_value'])}</td>
+            <td style="padding:6px 10px;text-align:right;">{pinfo_c["current"]}</td>
+            <td style="padding:6px 10px;text-align:right;">{pinfo_c["target"]}</td>
         </tr>"""
 
     # Mega positions
     mega_rows = ""
     for i, m in enumerate(mega, 1):
         flag = f" ({m['put_call']})" if m.get("put_call") else ""
+        pinfo_m = get_price_info(m['stock'])
         mega_rows += f"""
         <tr>
             <td style="padding:6px 10px;border-bottom:1px solid #2a2a2a;">{i}</td>
             <td style="padding:6px 10px;border-bottom:1px solid #2a2a2a;">{m['manager']}</td>
             <td style="padding:6px 10px;border-bottom:1px solid #2a2a2a;font-weight:500;">{m['stock']}{flag}</td>
             <td style="padding:6px 10px;border-bottom:1px solid #2a2a2a;">{fmt_usd(m['value'])}</td>
+            <td style="padding:6px 10px;text-align:right;">{pinfo_m["current"]}</td>
+            <td style="padding:6px 10px;text-align:right;">{pinfo_m["target"]}</td>
         </tr>"""
 
     # Per-manager top 5 holdings
@@ -334,11 +344,13 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
         top5_rows = ""
         for h in s.get("top5", []):
             flag = f" [{h['put_call']}]" if h.get("put_call") else ""
+            pinfo = get_price_info(h['name'])
             top5_rows += f"""
             <tr>
                 <td style="padding:4px 8px;font-size:13px;">{h['name']}{flag}</td>
                 <td style="padding:4px 8px;font-size:13px;text-align:right;">{fmt_usd(h['value'])}</td>
-                <td style="padding:4px 8px;font-size:13px;text-align:right;">{get_buy_up_to(h['name'])}</td>
+                <td style="padding:4px 8px;font-size:13px;text-align:right;">{pinfo["current"]}</td>
+                <td style="padding:4px 8px;font-size:13px;text-align:right;">{pinfo["target"]}</td>
             </tr>"""
 
         manager_cards += f"""
@@ -347,7 +359,15 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
                 <span style="font-weight:700;font-size:15px;color:#e8e8e8;">{s['name']}</span>
                 <span style="color:#00d4aa;font-weight:600;">{fmt_usd(s['total'])}</span>
             </div>
-            <table style="width:100%;border-collapse:collapse;color:#c0c0c0;">{top5_rows}</table>
+            <table style="width:100%;border-collapse:collapse;color:#c0c0c0;">
+              <thead><tr>
+                <th style="padding:4px 8px;font-size:11px;color:#808080;text-align:left;">Position</th>
+                <th style="padding:4px 8px;font-size:11px;color:#808080;text-align:right;">Value</th>
+                <th style="padding:4px 8px;font-size:11px;color:#808080;text-align:right;">Current Price</th>
+                <th style="padding:4px 8px;font-size:11px;color:#808080;text-align:right;">Buy Up To (-10%)</th>
+              </tr></thead>
+              <tbody>{top5_rows}</tbody>
+            </table>
         </div>"""
 
     html = f"""
@@ -392,6 +412,8 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
           <th style="padding:6px 10px;text-align:left;">Stock</th>
           <th style="padding:6px 10px;text-align:left;">Held By</th>
           <th style="padding:6px 10px;text-align:left;">Combined Value</th>
+          <th style="padding:6px 10px;text-align:right;">Current Price</th>
+          <th style="padding:6px 10px;text-align:right;">Buy Up To (-10%)</th>
         </tr>
       </thead>
       <tbody>{consensus_rows}</tbody>
@@ -408,7 +430,8 @@ def build_email_html(summaries: list[dict], consensus: list[dict], mega: list[di
           <th style="padding:6px 10px;text-align:left;">Manager</th>
           <th style="padding:6px 10px;text-align:left;">Position</th>
           <th style="padding:6px 10px;text-align:left;">Value</th>
-          <th style="padding:6px 10px;text-align:right;">Buy Up To</th>
+          <th style="padding:6px 10px;text-align:right;">Current Price</th>
+          <th style="padding:6px 10px;text-align:right;">Buy Up To (-10%)</th>
         </tr>
       </thead>
       <tbody>{mega_rows}</tbody>
