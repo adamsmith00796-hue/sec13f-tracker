@@ -1,8 +1,8 @@
 name: SEC 13F Weekly Digest
 
 on:
-  schedule:
-    - cron: "0 20 * * 4"
+  # The weekly schedule has been retired — the digest no longer sends
+  # automatically. Run it by hand from the Actions tab if needed.
   workflow_dispatch:
 
 jobs:
