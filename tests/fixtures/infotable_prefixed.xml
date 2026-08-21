@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns1:informationTable xmlns:ns1="http://www.sec.gov/edgar/document/thirteenf/informationtable">
+  <ns1:infoTable>
+    <ns1:nameOfIssuer>MICROSOFT CORP</ns1:nameOfIssuer>
+    <ns1:cusip>594918104</ns1:cusip>
+    <ns1:value>987654</ns1:value>
+    <ns1:shrsOrPrnAmt><ns1:sshPrnamt>1000</ns1:sshPrnamt></ns1:shrsOrPrnAmt>
+  </ns1:infoTable>
+</ns1:informationTable>

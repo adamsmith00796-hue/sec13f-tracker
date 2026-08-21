@@ -1,0 +1,12 @@
+{
+  "cik": "1067983",
+  "name": "BERKSHIRE HATHAWAY INC",
+  "filings": {
+    "recent": {
+      "form":            ["8-K",          "13F-HR",        "10-Q",          "13F-HR"],
+      "filingDate":      ["2026-08-01",   "2026-05-15",    "2026-05-01",    "2026-02-14"],
+      "accessionNumber": ["0000950123-26-000111", "0000950123-26-000222", "0000950123-26-000333", "0000950123-26-000444"],
+      "primaryDocument": ["form8k.htm",   "primary_doc.xml", "form10q.htm", "primary_doc.xml"]
+    }
+  }
+}
