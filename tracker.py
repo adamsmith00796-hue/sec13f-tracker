@@ -9,11 +9,10 @@ Email via Gmail SMTP (App Password) or SendGrid.
 """
 
 import os
-import json
 import smtplib
 import requests
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from bs4 import BeautifulSoup
@@ -491,7 +490,7 @@ def main():
         print(f"→ {name} (CIK: {cik})")
         meta = get_latest_13f(cik)
         if not meta:
-            print(f"  ⚠ No 13F found. Skipping.")
+            print("  ⚠ No 13F found. Skipping.")
             continue
 
         print(f"  Filing: {meta['filingDate']}  Accession: {meta['accessionNumber']}")
