@@ -122,15 +122,8 @@ def fetch_13f_holdings(meta: dict) -> list[dict]:
     acc = meta["accessionNumber"].replace("-", "")
     cik = meta["cik"]
 
-    # Try the primary document index to find the XML holdings file
-    idx_url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{acc}/0001193125-{acc[4:]}-index.htm"
-    # More reliable: use EDGAR full-text index
-    index_url = (
-        f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany"
-        f"&CIK={cik}&type=13F-HR&dateb=&owner=include&count=1&search_text="
-    )
-
-    # Directly construct filing folder URL
+    # Directly construct filing folder URL.
+    # Note: archive paths use the unpadded CIK and a dashless accession.
     folder_url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{acc}/"
 
     try:
@@ -140,14 +133,14 @@ def fetch_13f_holdings(meta: dict) -> list[dict]:
         # Find the infotable XML file
         xml_link = None
         for a in soup.find_all("a", href=True):
-            href = a["href"]
-            if "infotable" in href.lower() or href.endswith(".xml"):
-                if "infotable" in href.lower():
-                    xml_link = href
-                    break
+            if "infotable" in a["href"].lower():
+                xml_link = a["href"]
+                break
         if not xml_link:
-            # Fall back to primary document
-            xml_link = f"/{acc}/{meta['primaryDocument']}"
+            # Fall back to the primary document, resolved against the same
+            # filing folder. A bare "/{acc}/..." path omits the
+            # /Archives/edgar/data/<cik>/ prefix and always 404s.
+            xml_link = f"{folder_url}{meta['primaryDocument']}"
     except Exception as e:
         print(f"  ⚠ Folder fetch error: {e}")
         return []
@@ -168,7 +161,11 @@ def fetch_13f_holdings(meta: dict) -> list[dict]:
             return node.get_text(strip=True) if node else ""
 
         try:
-            value = int(txt("value") or 0) * 1000   # SEC reports in $thousands
+            # SEC Form 13F amendments (compliance date 2023-01-03) require
+            # values rounded to the nearest whole dollar. Filings before that
+            # date reported $thousands; this tracker only ever reads the most
+            # recent filing, so whole dollars is correct.
+            value = int(txt("value") or 0)
         except ValueError:
             value = 0
 

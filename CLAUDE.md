@@ -18,7 +18,6 @@ not to — the value of this project is that one file is readable end to end.
 | `tracker.py` | Everything: config, fetch, parse, analytics, render, send |
 | `tests/` | pytest suite, fully offline |
 | `tests/fixtures/` | Saved EDGAR responses — the contract with SEC's format |
-| `KNOWN-ISSUES.md` | Confirmed bugs with xfail tests, not yet fixed |
 | `.claude/skills/` | Vendored skills (see `.claude/skills/README.md`) |
 | `.github/workflows/weekly.yml` | Digest runner — **manual dispatch only** |
 | `.github/workflows/tests.yml` | CI: runs the test suite |
@@ -56,8 +55,14 @@ run it to "check if something works" — write or run a test instead.
 
 ## Domain notes that have already caused bugs
 
-- **Values are whole dollars, not thousands.** SEC changed this effective
-  2023-01-03. `tracker.py` still multiplies by 1000. See KNOWN-ISSUES.md #1.
+- **Values are whole dollars, not thousands.** SEC's Form 13F amendments
+  changed the rounding convention effective 2023-01-03
+  ([FAQ 36](https://www.sec.gov/divisions/investment/13ffaq)). Do not
+  reintroduce a `* 1000` scale — this code carried that bug and overstated
+  every figure in the digest by 1000x.
+- **The XML fallback must resolve against `folder_url`.** A bare
+  `/{accession}/{doc}` path omits the `/Archives/edgar/data/<cik>/` prefix
+  and 404s, silently dropping the manager from the digest.
 - **EDGAR archive URLs use the unpadded CIK**
   (`/Archives/edgar/data/1067983/`) while the submissions API uses the
   10-digit zero-padded form (`CIK0001067983.json`). Mixing them up 404s.

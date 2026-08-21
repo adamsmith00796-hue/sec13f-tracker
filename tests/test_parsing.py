@@ -4,7 +4,6 @@ Every network call is mocked against saved EDGAR fixtures. If SEC changes
 their response shape, these fail loudly here instead of silently producing
 an empty or wrong digest.
 """
-import pytest
 import requests
 
 import tracker
@@ -142,29 +141,17 @@ class TestFetch13FHoldings:
             "https://www.sec.gov/Archives/edgar/data/1067983/"
             "000095012326000222/")
 
-    def test_value_is_scaled_by_one_thousand(
+    def test_value_is_read_as_whole_dollars(
             self, monkeypatch, fake_response, folder_html, infotable_xml):
         route(monkeypatch, fake_response, folder_html, infotable_xml)
 
         holdings = tracker.fetch_13f_holdings(META)
 
-        # Documents CURRENT behaviour, which assumes SEC reports $thousands.
-        # This is WRONG for modern filings — see KNOWN-ISSUES.md #1.
-        assert holdings[0]["value"] == 1234567 * 1000
-
-    @pytest.mark.xfail(
-        reason="Known bug: SEC Form 13F amendments (compliance date "
-               "2023-01-03) require values rounded to the nearest whole "
-               "dollar, not thousands. The *1000 scaling overstates every "
-               "figure in the digest by 1000x. See KNOWN-ISSUES.md #1.",
-        strict=True)
-    def test_value_should_be_whole_dollars_for_modern_filings(
-            self, monkeypatch, fake_response, folder_html, infotable_xml):
-        route(monkeypatch, fake_response, folder_html, infotable_xml)
-
-        holdings = tracker.fetch_13f_holdings(META)
-
+        # SEC Form 13F amendments (compliance date 2023-01-03) require values
+        # rounded to the nearest whole dollar. Scaling by 1000 here — as this
+        # code used to — overstates every figure in the digest by 1000x.
         assert holdings[0]["value"] == 1234567
+        assert holdings[1]["value"] == 800000
 
     def test_non_numeric_value_becomes_zero_not_a_crash(
             self, monkeypatch, fake_response, folder_html):
@@ -210,11 +197,6 @@ class TestFetch13FHoldings:
         monkeypatch.setattr(requests, "get", _get)
         assert tracker.fetch_13f_holdings(META) == []
 
-    @pytest.mark.xfail(
-        reason="Known bug: the no-infotable fallback builds a URL missing "
-               "the /Archives/edgar/data/<cik>/ prefix, so it always 404s. "
-               "See KNOWN-ISSUES.md.",
-        strict=True)
     def test_fallback_to_primary_doc_builds_a_valid_url(
             self, monkeypatch, fake_response):
         calls = []
