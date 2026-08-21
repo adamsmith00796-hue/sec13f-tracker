@@ -86,6 +86,28 @@ run it to "check if something works" — write or run a test instead.
 - Type hints on function signatures, docstrings on every function.
 - Money is formatted through `fmt_usd()`, never interpolated raw.
 
+## Model and delegation policy
+
+The lead model owns the build. It keeps architecture, domain correctness,
+security-sensitive changes, and the final review before any commit.
+
+Push bulk mechanical work down to cheaper subagents to save credits:
+
+| Delegate to a cheaper tier | Keep on the lead model |
+|---|---|
+| Broad multi-file searches | Anything touching money formatting or 13F parsing semantics |
+| Repetitive edits, boilerplate, docstrings | Dependency changes |
+| Summarising long test or lint output | The decision to commit or push |
+| Drafting fixtures from a known format | Final review of any diff |
+
+Two rules that keep this from backfiring:
+
+- **Delegation has a cold-start cost.** A subagent re-derives context from
+  scratch. If the task touches fewer than ~2 files or takes a few minutes,
+  do it inline — delegating costs more than it saves.
+- **A subagent's output is a draft, not a verified change.** Review it and
+  run the suite before committing.
+
 ## Before saying a change works
 
 Run `python3 -m pytest` and quote the result. The suite is under a second —
