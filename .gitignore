@@ -2,3 +2,6 @@
 __pycache__/
 .pytest_cache/
 *.pyc
+
+# Local Claude Code overrides — may contain API keys, never commit
+.claude/settings.local.json
